@@ -6,6 +6,8 @@
     <title>Plancity - Planejamento Urbano Colaborativo</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <!-- Página Inicial -->
@@ -211,6 +213,172 @@
                         <!-- Problemas serão inseridos aqui via JavaScript -->
                     </div>
                 </div>
+
+                <!-- Seção Mapa da Cidade -->
+                <div id="mapa-cidade-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Mapa da Cidade - Maringá</h2>
+                        <div class="map-filters">
+                            <select id="map-filter">
+                                <option value="todos">Todos os problemas</option>
+                                <option value="infraestrutura">Infraestrutura</option>
+                                <option value="iluminacao">Iluminação</option>
+                                <option value="mobilidade">Mobilidade</option>
+                                <option value="limpeza">Limpeza</option>
+                                <option value="seguranca">Segurança</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="showReportModal()">
+                                <i class="fas fa-map-marker-alt"></i> Reportar Aqui
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-container">
+                        <div id="maringa-map" class="interactive-map"></div>
+                        <div class="map-legend">
+                            <h4>Legenda</h4>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #ef4444;">📍</span>
+                                    <span>Problemas Urgentes</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #f59e0b;">📍</span>
+                                    <span>Em Análise</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #3b82f6;">📍</span>
+                                    <span>Aprovados</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #10b981;">📍</span>
+                                    <span>Resolvidos</span>
+                                </div>
+                            </div>
+                            <div class="map-stats">
+                                <h5>Estatísticas</h5>
+                                <div class="stat-item">
+                                    <span>Total de Problemas:</span>
+                                    <strong id="map-total-problems">0</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Região Mais Afetada:</span>
+                                    <strong id="map-most-affected">Centro</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="map-problems-list">
+                        <h3>Problemas Reportados</h3>
+                        <div id="map-problems-container">
+                            <!-- Problemas do mapa serão inseridos aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção Minhas Sugestões -->
+                <div id="minhas-sugestoes-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Minhas Sugestões</h2>
+                        <button class="btn btn-primary" onclick="showReportModal()">
+                            <i class="fas fa-plus"></i> Nova Sugestão
+                        </button>
+                    </div>
+                    <div class="suggestions-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="total-sugestoes">0</div>
+                                <div class="stat-label">Total de Sugestões</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="sugestoes-pendentes">0</div>
+                                <div class="stat-label">Pendentes</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number" id="sugestoes-aprovadas-count">0</div>
+                                <div class="stat-label">Aprovadas</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="minhas-sugestoes-list" class="problems-list">
+                        <!-- Sugestões do usuário serão inseridas aqui -->
+                    </div>
+                </div>
+
+                <!-- Seção Configurações -->
+                <div id="configuracoes-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Configurações</h2>
+                    </div>
+                    <div class="settings-container">
+                        <div class="settings-card">
+                            <h3>Perfil do Usuário</h3>
+                            <form id="profile-form">
+                                <div class="form-group">
+                                    <label for="profile-name">Nome Completo</label>
+                                    <input type="text" id="profile-name" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-email">E-mail</label>
+                                    <input type="email" id="profile-email" placeholder="seu@email.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-phone">Telefone</label>
+                                    <input type="tel" id="profile-phone" placeholder="(11) 99999-9999">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-neighborhood">Bairro</label>
+                                    <input type="text" id="profile-neighborhood" placeholder="Seu bairro">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                            </form>
+                        </div>
+                        
+                        <div class="settings-card">
+                            <h3>Notificações</h3>
+                            <div class="notification-settings">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="notify-email" checked>
+                                    <span>Receber notificações por e-mail</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="notify-updates" checked>
+                                    <span>Atualizações sobre minhas sugestões</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="notify-news" checked>
+                                    <span>Novidades da plataforma</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card">
+                            <h3>Privacidade</h3>
+                            <div class="privacy-settings">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="public-profile">
+                                    <span>Perfil público</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-contributions" checked>
+                                    <span>Mostrar minhas contribuições</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -301,6 +469,210 @@
                         <!-- Demandas serão inseridas aqui via JavaScript -->
                     </div>
                 </div>
+
+                <!-- Seção Mapa da Cidade -->
+                <div id="mapa-cidade-section" class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Mapa da Cidade - Maringá</h2>
+                        <div class="map-filters">
+                            <select id="map-filter">
+                                <option value="todos">Todos os problemas</option>
+                                <option value="infraestrutura">Infraestrutura</option>
+                                <option value="iluminacao">Iluminação</option>
+                                <option value="mobilidade">Mobilidade</option>
+                                <option value="limpeza">Limpeza</option>
+                                <option value="seguranca">Segurança</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="showReportModal()">
+                                <i class="fas fa-map-marker-alt"></i> Reportar Aqui
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-container">
+                        <div id="maringa-map" class="interactive-map"></div>
+                        <div class="map-legend">
+                            <h4>Legenda</h4>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #ef4444;">📍</span>
+                                    <span>Problemas Urgentes</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #f59e0b;">📍</span>
+                                    <span>Em Análise</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #3b82f6;">📍</span>
+                                    <span>Aprovados</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-marker" style="background: #10b981;">📍</span>
+                                    <span>Resolvidos</span>
+                                </div>
+                            </div>
+                            <div class="map-stats">
+                                <h5>Estatísticas</h5>
+                                <div class="stat-item">
+                                    <span>Total de Problemas:</span>
+                                    <strong id="map-total-problems">0</strong>
+                                </div>
+                                <div class="stat-item">
+                                    <span>Região Mais Afetada:</span>
+                                    <strong id="map-most-affected">Centro</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="map-problems-list">
+                        <h3>Problemas Reportados</h3>
+                        <div id="map-problems-container">
+                            <!-- Problemas do mapa serão inseridos aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção Demandas Cidadãs -->
+                <div id="demandas-cidadas-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Demandas Cidadãs</h2>
+                        <div class="filters">
+                            <select id="demandas-filter">
+                                <option value="todos">Todos os status</option>
+                                <option value="pendente">Pendentes</option>
+                                <option value="em_analise">Em Análise</option>
+                                <option value="aprovado">Aprovadas</option>
+                                <option value="rejeitado">Rejeitadas</option>
+                                <option value="concluido">Concluídas</option>
+                            </select>
+                            <select id="demandas-prioridade">
+                                <option value="todos">Todas as prioridades</option>
+                                <option value="urgente">Urgente</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Média</option>
+                                <option value="baixa">Baixa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="demandas-analytics">
+                        <div class="analytics-card">
+                            <h4>Análise por Categoria</h4>
+                            <div class="category-stats">
+                                <div class="category-item">
+                                    <span>Infraestrutura</span>
+                                    <div class="category-bar">
+                                        <div class="category-fill" style="width: 40%"></div>
+                                    </div>
+                                    <span>40%</span>
+                                </div>
+                                <div class="category-item">
+                                    <span>Iluminação</span>
+                                    <div class="category-bar">
+                                        <div class="category-fill" style="width: 25%"></div>
+                                    </div>
+                                    <span>25%</span>
+                                </div>
+                                <div class="category-item">
+                                    <span>Mobilidade</span>
+                                    <div class="category-bar">
+                                        <div class="category-fill" style="width: 20%"></div>
+                                    </div>
+                                    <span>20%</span>
+                                </div>
+                                <div class="category-item">
+                                    <span>Limpeza</span>
+                                    <div class="category-bar">
+                                        <div class="category-fill" style="width: 10%"></div>
+                                    </div>
+                                    <span>10%</span>
+                                </div>
+                                <div class="category-item">
+                                    <span>Segurança</span>
+                                    <div class="category-bar">
+                                        <div class="category-fill" style="width: 5%"></div>
+                                    </div>
+                                    <span>5%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="todas-demandas-list" class="problems-list">
+                        <!-- Todas as demandas serão inseridas aqui -->
+                    </div>
+                </div>
+
+                <!-- Seção Especialistas -->
+                <div id="especialistas-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Especialistas</h2>
+                        <button class="btn btn-primary" onclick="showAddSpecialistModal()">
+                            <i class="fas fa-user-plus"></i> Adicionar Especialista
+                        </button>
+                    </div>
+                    <div class="specialists-grid">
+                        <div class="specialist-card">
+                            <div class="specialist-avatar">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="specialist-info">
+                                <h4>João Silva</h4>
+                                <p>Engenheiro Civil</p>
+                                <div class="specialist-stats">
+                                    <span><i class="fas fa-project-diagram"></i> 5 projetos</span>
+                                    <span><i class="fas fa-star"></i> 4.8</span>
+                                </div>
+                                <div class="specialist-status">
+                                    <span class="status-badge status-aprovado">Disponível</span>
+                                </div>
+                            </div>
+                            <div class="specialist-actions">
+                                <button class="btn btn-secondary" onclick="viewSpecialistDetails(1)">Ver Detalhes</button>
+                                <button class="btn btn-primary" onclick="assignProject(1)">Atribuir Projeto</button>
+                            </div>
+                        </div>
+                        
+                        <div class="specialist-card">
+                            <div class="specialist-avatar">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="specialist-info">
+                                <h4>Maria Santos</h4>
+                                <p>Engenheira Elétrica</p>
+                                <div class="specialist-stats">
+                                    <span><i class="fas fa-project-diagram"></i> 3 projetos</span>
+                                    <span><i class="fas fa-star"></i> 4.9</span>
+                                </div>
+                                <div class="specialist-status">
+                                    <span class="status-badge status-em_progresso">Ocupado</span>
+                                </div>
+                            </div>
+                            <div class="specialist-actions">
+                                <button class="btn btn-secondary" onclick="viewSpecialistDetails(2)">Ver Detalhes</button>
+                                <button class="btn btn-secondary" disabled>Indisponível</button>
+                            </div>
+                        </div>
+                        
+                        <div class="specialist-card">
+                            <div class="specialist-avatar">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="specialist-info">
+                                <h4>Carlos Oliveira</h4>
+                                <p>Arquiteto Urbanista</p>
+                                <div class="specialist-stats">
+                                    <span><i class="fas fa-project-diagram"></i> 8 projetos</span>
+                                    <span><i class="fas fa-star"></i> 4.7</span>
+                                </div>
+                                <div class="specialist-status">
+                                    <span class="status-badge status-aprovado">Disponível</span>
+                                </div>
+                            </div>
+                            <div class="specialist-actions">
+                                <button class="btn btn-secondary" onclick="viewSpecialistDetails(3)">Ver Detalhes</button>
+                                <button class="btn btn-primary" onclick="assignProject(3)">Atribuir Projeto</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -389,6 +761,105 @@
                     </div>
                     <div id="especialista-projects-list" class="problems-list">
                         <!-- Projetos serão inseridos aqui via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Seção Orçamentos -->
+                <div id="orcamentos-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Orçamentos</h2>
+                        <button class="btn btn-primary" onclick="showBudgetModal()">
+                            <i class="fas fa-file-alt"></i> Novo Orçamento
+                        </button>
+                    </div>
+                    <div class="budget-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">12</div>
+                                <div class="stat-label">Total de Orçamentos</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">3</div>
+                                <div class="stat-label">Pendentes</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">8</div>
+                                <div class="stat-label">Aprovados</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">R$ 125k</div>
+                                <div class="stat-label">Valor Total</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="orcamentos-list" class="budgets-list">
+                        <!-- Orçamentos serão inseridos aqui -->
+                    </div>
+                </div>
+
+                <!-- Seção Feedback -->
+                <div id="feedback-section" class="dashboard-section" style="display: none;">
+                    <div class="section-header">
+                        <h2>Feedback dos Projetos</h2>
+                        <div class="filters">
+                            <select id="feedback-filter">
+                                <option value="todos">Todos os tipos</option>
+                                <option value="sugestao">Sugestões</option>
+                                <option value="elogio">Elogios</option>
+                                <option value="reclamacao">Reclamações</option>
+                                <option value="duvida">Dúvidas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="feedback-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">47</div>
+                                <div class="stat-label">Total de Feedbacks</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">4.6</div>
+                                <div class="stat-label">Avaliação Média</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-thumbs-up"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">89%</div>
+                                <div class="stat-label">Satisfação</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="feedback-list" class="feedback-container">
+                        <!-- Feedbacks serão inseridos aqui -->
                     </div>
                 </div>
             </main>
@@ -534,6 +1005,88 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal para Adicionar Especialista -->
+    <div id="add-specialist-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Especialista</h2>
+                <button class="modal-close" onclick="closeAddSpecialistModal()">&times;</button>
+            </div>
+            <form id="add-specialist-form">
+                <div class="form-group">
+                    <label for="specialist-name">Nome Completo *</label>
+                    <input type="text" id="specialist-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialist-specialty">Especialidade *</label>
+                    <select id="specialist-specialty" required>
+                        <option value="">Selecione a especialidade</option>
+                        <option value="engenheiro-civil">Engenheiro Civil</option>
+                        <option value="engenheiro-eletrico">Engenheiro Elétrico</option>
+                        <option value="arquiteto">Arquiteto Urbanista</option>
+                        <option value="engenheiro-ambiental">Engenheiro Ambiental</option>
+                        <option value="engenheiro-transito">Engenheiro de Trânsito</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="specialist-email">E-mail *</label>
+                    <input type="email" id="specialist-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialist-phone">Telefone</label>
+                    <input type="tel" id="specialist-phone">
+                </div>
+                <div class="form-group">
+                    <label for="specialist-experience">Anos de Experiência</label>
+                    <input type="number" id="specialist-experience" min="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddSpecialistModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar Especialista</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Atribuir Projeto -->
+    <div id="assign-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Atribuir Projeto</h2>
+                <button class="modal-close" onclick="closeAssignProjectModal()">&times;</button>
+            </div>
+            <form id="assign-project-form">
+                <div class="form-group">
+                    <label for="assign-project-select">Projeto *</label>
+                    <select id="assign-project-select" required>
+                        <option value="">Selecione um projeto</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="assign-deadline">Prazo (dias)</label>
+                <input type="number" id="assign-deadline" min="1" value="30">
+            </div>
+            <div class="form-group">
+                <label for="assign-priority">Prioridade</label>
+                <select id="assign-priority">
+                    <option value="baixa">Baixa</option>
+                    <option value="media" selected>Média</option>
+                    <option value="alta">Alta</option>
+                    <option value="urgente">Urgente</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="assign-notes">Observações</label>
+                <textarea id="assign-notes" rows="3" placeholder="Instruções especiais para o especialista..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAssignProjectModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Atribuir Projeto</button>
+            </div>
+        </form>
+    </div>
+</div>
 
     <script src="script.js"></script>
 </body>

@@ -1,3 +1,5 @@
+// JavaScript para dashboard.html (dashboards dos usuários)
+
 // Variáveis do mapa
 let maringaMap = null
 let markersLayer = null
@@ -155,7 +157,7 @@ const feedbacks = []
 
 let usuarioAtual = null
 
-// Inicialização
+// Inicialização para dashboard
 document.addEventListener("DOMContentLoaded", () => {
   // Verificar se há usuário logado
   const usuarioSalvo = localStorage.getItem("usuario")
@@ -163,15 +165,31 @@ document.addEventListener("DOMContentLoaded", () => {
     usuarioAtual = JSON.parse(usuarioSalvo)
     showDashboard(usuarioAtual.tipo)
   } else {
-    showPage("home-page")
+    // Se não está logado, redirecionar para login
+    window.location.href = "index.html"
+    return
   }
 
   // Event listeners
-  document.getElementById("login-form").addEventListener("submit", handleLogin)
-  document.getElementById("report-form").addEventListener("submit", handleReportSubmit)
-  document.getElementById("budget-form").addEventListener("submit", handleBudgetSubmit)
-  document.getElementById("feedback-form").addEventListener("submit", handleFeedbackSubmit)
-  document.getElementById("filter-category").addEventListener("change", filterProblems)
+  const reportForm = document.getElementById("report-form")
+  if (reportForm) {
+    reportForm.addEventListener("submit", handleReportSubmit)
+  }
+
+  const budgetForm = document.getElementById("budget-form")
+  if (budgetForm) {
+    budgetForm.addEventListener("submit", handleBudgetSubmit)
+  }
+
+  const feedbackForm = document.getElementById("feedback-form")
+  if (feedbackForm) {
+    feedbackForm.addEventListener("submit", handleFeedbackSubmit)
+  }
+
+  const filterCategory = document.getElementById("filter-category")
+  if (filterCategory) {
+    filterCategory.addEventListener("change", filterProblems)
+  }
 
   // Event listeners para cálculo de orçamento
   const budgetInputs = ["budget-materials", "budget-labor", "budget-equipment"]
@@ -190,55 +208,51 @@ document.addEventListener("DOMContentLoaded", () => {
   loadGestorProblems()
   loadEspecialistaProjetos()
   loadBudgetProjects()
+
+  // Configurar navegação da sidebar
+  setupSidebarNavigation()
 })
 
-// Navegação entre páginas
-function showPage(pageId) {
-  document.querySelectorAll(".page").forEach((page) => {
-    page.classList.remove("active")
-  })
-  document.getElementById(pageId).classList.add("active")
-}
-
+// Navegação entre dashboards
 function showDashboard(tipo) {
-  showPage(`dashboard-${tipo}`)
-  updateStats()
-}
+  // Esconder todos os dashboards
+  const dashboards = document.querySelectorAll('[id^="dashboard-"]')
+  dashboards.forEach((dashboard) => {
+    dashboard.classList.remove("active")
+  })
 
-// Login
-function handleLogin(e) {
-  e.preventDefault()
-
-  const nome = document.getElementById("nome").value.trim()
-  const tipo = document.querySelector('input[name="tipo"]:checked').value
-
-  if (!nome) {
-    alert("Por favor, digite seu nome")
-    return
+  // Mostrar dashboard do tipo de usuário
+  const targetDashboard = document.getElementById(`dashboard-${tipo}`)
+  if (targetDashboard) {
+    targetDashboard.classList.add("active")
+    updateStats()
   }
-
-  usuarioAtual = { nome, tipo }
-  localStorage.setItem("usuario", JSON.stringify(usuarioAtual))
-
-  showDashboard(tipo)
 }
 
 // Logout
 function logout() {
   localStorage.removeItem("usuario")
   usuarioAtual = null
-  showPage("home-page")
-  document.getElementById("login-form").reset()
+  window.location.href = "index.html"
 }
 
 // Modal de reportar problema
 function showReportModal() {
-  document.getElementById("report-modal").classList.add("active")
+  const modal = document.getElementById("report-modal")
+  if (modal) {
+    modal.classList.add("active")
+  }
 }
 
 function closeReportModal() {
-  document.getElementById("report-modal").classList.remove("active")
-  document.getElementById("report-form").reset()
+  const modal = document.getElementById("report-modal")
+  if (modal) {
+    modal.classList.remove("active")
+  }
+  const form = document.getElementById("report-form")
+  if (form) {
+    form.reset()
+  }
 }
 
 // Submeter novo problema
@@ -296,6 +310,8 @@ function showDetailsModal(id, tipo = "problema") {
   const modal = document.getElementById("details-modal")
   const titleElement = document.getElementById("details-title")
   const contentElement = document.getElementById("details-content")
+
+  if (!modal || !titleElement || !contentElement) return
 
   let item
   if (tipo === "problema") {
@@ -427,25 +443,42 @@ function showDetailsModal(id, tipo = "problema") {
 }
 
 function closeDetailsModal() {
-  document.getElementById("details-modal").classList.remove("active")
+  const modal = document.getElementById("details-modal")
+  if (modal) {
+    modal.classList.remove("active")
+  }
 }
 
 // Modal de orçamento
 function showBudgetModal(projectId = null) {
   const modal = document.getElementById("budget-modal")
+  if (!modal) return
+
   loadBudgetProjects()
 
   if (projectId) {
-    document.getElementById("budget-project").value = projectId
+    const select = document.getElementById("budget-project")
+    if (select) {
+      select.value = projectId
+    }
   }
 
   modal.classList.add("active")
 }
 
 function closeBudgetModal() {
-  document.getElementById("budget-modal").classList.remove("active")
-  document.getElementById("budget-form").reset()
-  document.getElementById("budget-total-value").textContent = "0.00"
+  const modal = document.getElementById("budget-modal")
+  if (modal) {
+    modal.classList.remove("active")
+  }
+  const form = document.getElementById("budget-form")
+  if (form) {
+    form.reset()
+  }
+  const totalValue = document.getElementById("budget-total-value")
+  if (totalValue) {
+    totalValue.textContent = "0.00"
+  }
 }
 
 function loadBudgetProjects() {
@@ -463,23 +496,26 @@ function loadBudgetProjects() {
 }
 
 function calculateBudgetTotal() {
-  const materials = Number.parseFloat(document.getElementById("budget-materials").value) || 0
-  const labor = Number.parseFloat(document.getElementById("budget-labor").value) || 0
-  const equipment = Number.parseFloat(document.getElementById("budget-equipment").value) || 0
+  const materials = Number.parseFloat(document.getElementById("budget-materials")?.value) || 0
+  const labor = Number.parseFloat(document.getElementById("budget-labor")?.value) || 0
+  const equipment = Number.parseFloat(document.getElementById("budget-equipment")?.value) || 0
 
   const total = materials + labor + equipment
-  document.getElementById("budget-total-value").textContent = total.toFixed(2)
+  const totalElement = document.getElementById("budget-total-value")
+  if (totalElement) {
+    totalElement.textContent = total.toFixed(2)
+  }
 }
 
 function handleBudgetSubmit(e) {
   e.preventDefault()
 
-  const projectId = document.getElementById("budget-project").value
-  const description = document.getElementById("budget-description").value
-  const materials = Number.parseFloat(document.getElementById("budget-materials").value) || 0
-  const labor = Number.parseFloat(document.getElementById("budget-labor").value) || 0
-  const equipment = Number.parseFloat(document.getElementById("budget-equipment").value) || 0
-  const deadline = document.getElementById("budget-deadline").value
+  const projectId = document.getElementById("budget-project")?.value
+  const description = document.getElementById("budget-description")?.value
+  const materials = Number.parseFloat(document.getElementById("budget-materials")?.value) || 0
+  const labor = Number.parseFloat(document.getElementById("budget-labor")?.value) || 0
+  const equipment = Number.parseFloat(document.getElementById("budget-equipment")?.value) || 0
+  const deadline = document.getElementById("budget-deadline")?.value
 
   const total = materials + labor + equipment
 
@@ -505,12 +541,21 @@ function handleBudgetSubmit(e) {
 
 // Modal de feedback
 function showFeedbackModal() {
-  document.getElementById("feedback-modal").classList.add("active")
+  const modal = document.getElementById("feedback-modal")
+  if (modal) {
+    modal.classList.add("active")
+  }
 }
 
 function closeFeedbackModal() {
-  document.getElementById("feedback-modal").classList.remove("active")
-  document.getElementById("feedback-form").reset()
+  const modal = document.getElementById("feedback-modal")
+  if (modal) {
+    modal.classList.remove("active")
+  }
+  const form = document.getElementById("feedback-form")
+  if (form) {
+    form.reset()
+  }
   resetRatingStars()
 }
 
@@ -519,7 +564,10 @@ function setupRatingStars() {
   stars.forEach((star, index) => {
     star.addEventListener("click", () => {
       const rating = index + 1
-      document.getElementById("feedback-rating").value = rating
+      const ratingInput = document.getElementById("feedback-rating")
+      if (ratingInput) {
+        ratingInput.value = rating
+      }
       updateStarDisplay(rating)
     })
 
@@ -531,7 +579,8 @@ function setupRatingStars() {
   const container = document.querySelector(".rating-stars")
   if (container) {
     container.addEventListener("mouseleave", () => {
-      const currentRating = document.getElementById("feedback-rating").value
+      const ratingInput = document.getElementById("feedback-rating")
+      const currentRating = ratingInput ? ratingInput.value : 0
       updateStarDisplay(currentRating)
     })
   }
@@ -549,16 +598,19 @@ function updateStarDisplay(rating) {
 }
 
 function resetRatingStars() {
-  document.getElementById("feedback-rating").value = 0
+  const ratingInput = document.getElementById("feedback-rating")
+  if (ratingInput) {
+    ratingInput.value = 0
+  }
   updateStarDisplay(0)
 }
 
 function handleFeedbackSubmit(e) {
   e.preventDefault()
 
-  const type = document.getElementById("feedback-type").value
-  const rating = document.getElementById("feedback-rating").value
-  const message = document.getElementById("feedback-message").value
+  const type = document.getElementById("feedback-type")?.value
+  const rating = document.getElementById("feedback-rating")?.value
+  const message = document.getElementById("feedback-message")?.value
 
   const novoFeedback = {
     id: Date.now(),
@@ -884,37 +936,82 @@ document.addEventListener("click", (e) => {
   }
 })
 
-// Animações e efeitos visuais
-function addNotification(message, type = "success") {
-  const notification = document.createElement("div")
-  notification.className = `notification notification-${type}`
-  notification.textContent = message
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 1rem 1.5rem;
-    background: ${type === "success" ? "#10b981" : "#ef4444"};
-    color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 9999;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-  `
+// Configurar navegação da sidebar
+function setupSidebarNavigation() {
+  // Event listeners para cidadão
+  const cidadaoLinks = document.querySelectorAll("#dashboard-cidadao .sidebar-menu a")
+  cidadaoLinks.forEach((link, index) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      cidadaoLinks.forEach((l) => l.classList.remove("active"))
+      link.classList.add("active")
 
-  document.body.appendChild(notification)
+      switch (index) {
+        case 0: // Dashboard
+          showSection("dashboard", "cidadao")
+          break
+        case 1: // Mapa da Cidade
+          showSection("mapa-cidade-section", "cidadao")
+          break
+        case 2: // Minhas Sugestões
+          showSection("minhas-sugestoes-section", "cidadao")
+          break
+        case 3: // Configurações
+          showSection("configuracoes-section", "cidadao")
+          break
+      }
+    })
+  })
 
-  setTimeout(() => {
-    notification.style.transform = "translateX(0)"
-  }, 100)
+  // Event listeners para gestor
+  const gestorLinks = document.querySelectorAll("#dashboard-gestor .sidebar-menu a")
+  gestorLinks.forEach((link, index) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      gestorLinks.forEach((l) => l.classList.remove("active"))
+      link.classList.add("active")
 
-  setTimeout(() => {
-    notification.style.transform = "translateX(100%)"
-    setTimeout(() => {
-      document.body.removeChild(notification)
-    }, 300)
-  }, 3000)
+      switch (index) {
+        case 0: // Dashboard
+          showSection("dashboard", "gestor")
+          break
+        case 1: // Mapa da Cidade
+          showSection("mapa-cidade-section", "gestor")
+          break
+        case 2: // Demandas Cidadãs
+          showSection("demandas-cidadas-section", "gestor")
+          break
+        case 3: // Especialistas
+          showSection("especialistas-section", "gestor")
+          break
+      }
+    })
+  })
+
+  // Event listeners para especialista
+  const especialistaLinks = document.querySelectorAll("#dashboard-especialista .sidebar-menu a")
+  especialistaLinks.forEach((link, index) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      especialistaLinks.forEach((l) => l.classList.remove("active"))
+      link.classList.add("active")
+
+      switch (index) {
+        case 0: // Dashboard
+          showSection("dashboard", "especialista")
+          break
+        case 1: // Projetos Atribuídos
+          showSection("dashboard", "especialista")
+          break
+        case 2: // Orçamentos
+          showSection("orcamentos-section", "especialista")
+          break
+        case 3: // Feedback
+          showSection("feedback-section", "especialista")
+          break
+      }
+    })
+  })
 }
 
 // Navegação da Sidebar
@@ -930,12 +1027,6 @@ function showSection(sectionId, userType) {
   if (targetSection) {
     targetSection.style.display = "block"
   }
-
-  // Atualizar menu ativo
-  const menuItems = document.querySelectorAll(".sidebar-menu a")
-  menuItems.forEach((item) => {
-    item.classList.remove("active")
-  })
 
   // Carregar dados específicos da seção
   switch (sectionId) {
@@ -969,106 +1060,15 @@ function showSection(sectionId, userType) {
     default:
       // Dashboard principal
       if (sectionId.includes("dashboard")) {
-        document.querySelector(".problems-section").style.display = "block"
+        const problemsSection = document.querySelector(`#dashboard-${userType} .problems-section`)
+        if (problemsSection) {
+          problemsSection.style.display = "block"
+        }
       }
   }
 }
 
-// Atualizar event listeners da sidebar
-document.addEventListener("DOMContentLoaded", () => {
-  // Event listeners para cidadão
-  const cidadaoLinks = document.querySelectorAll("#dashboard-cidadao .sidebar-menu a")
-  cidadaoLinks.forEach((link, index) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      cidadaoLinks.forEach((l) => l.classList.remove("active"))
-      link.classList.add("active")
-
-      switch (index) {
-        case 0: // Dashboard
-          showSection("dashboard", "cidadao")
-          document.querySelector("#dashboard-cidadao .problems-section").style.display = "block"
-          break
-        case 1: // Mapa da Cidade
-          showSection("mapa-cidade-section", "cidadao")
-          break
-        case 2: // Minhas Sugestões
-          showSection("minhas-sugestoes-section", "cidadao")
-          break
-        case 3: // Configurações
-          showSection("configuracoes-section", "cidadao")
-          break
-      }
-    })
-  })
-
-  // Event listeners para gestor
-  const gestorLinks = document.querySelectorAll("#dashboard-gestor .sidebar-menu a")
-  gestorLinks.forEach((link, index) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      gestorLinks.forEach((l) => l.classList.remove("active"))
-      link.classList.add("active")
-
-      switch (index) {
-        case 0: // Dashboard
-          showSection("dashboard", "gestor")
-          document.querySelector("#dashboard-gestor .problems-section").style.display = "block"
-          break
-        case 1: // Mapa da Cidade
-          showSection("mapa-cidade-section", "gestor")
-          break
-        case 2: // Demandas Cidadãs
-          showSection("demandas-cidadas-section", "gestor")
-          break
-        case 3: // Especialistas
-          showSection("especialistas-section", "gestor")
-          break
-      }
-    })
-  })
-
-  // Event listeners para especialista
-  const especialistaLinks = document.querySelectorAll("#dashboard-especialista .sidebar-menu a")
-  especialistaLinks.forEach((link, index) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      especialistaLinks.forEach((l) => l.classList.remove("active"))
-      link.classList.add("active")
-
-      switch (index) {
-        case 0: // Dashboard
-          showSection("dashboard", "especialista")
-          document.querySelector("#dashboard-especialista .problems-section").style.display = "block"
-          break
-        case 1: // Projetos Atribuídos
-          showSection("dashboard", "especialista")
-          document.querySelector("#dashboard-especialista .problems-section").style.display = "block"
-          break
-        case 2: // Orçamentos
-          showSection("orcamentos-section", "especialista")
-          break
-        case 3: // Feedback
-          showSection("feedback-section", "especialista")
-          break
-      }
-    })
-  })
-
-  // Event listeners para formulários
-  document.getElementById("profile-form")?.addEventListener("submit", handleProfileUpdate)
-  document.getElementById("add-specialist-form")?.addEventListener("submit", handleAddSpecialist)
-  document.getElementById("assign-project-form")?.addEventListener("submit", handleAssignProject)
-
-  // Event listeners para filtros
-  document.getElementById("map-filter")?.addEventListener("change", loadMapProblems)
-  document.getElementById("demandas-filter")?.addEventListener("change", loadTodasDemandas)
-  document.getElementById("demandas-prioridade")?.addEventListener("change", loadTodasDemandas)
-  document.getElementById("feedback-filter")?.addEventListener("change", loadFeedbacks)
-})
-
-// Funções para carregar dados das seções
-
+// Funções para carregar dados das seções (continuação das funções existentes)
 function loadMapProblems() {
   // Inicializar mapa se não existir
   if (!maringaMap && document.getElementById("maringa-map")) {
@@ -1121,13 +1121,20 @@ function loadMinhasSugestoes() {
   const minhasSugestoes = problemas.filter((p) => p.autor === usuarioAtual.nome)
 
   // Atualizar estatísticas
-  document.getElementById("total-sugestoes").textContent = minhasSugestoes.length
-  document.getElementById("sugestoes-pendentes").textContent = minhasSugestoes.filter(
-    (p) => p.status === "pendente",
-  ).length
-  document.getElementById("sugestoes-aprovadas-count").textContent = minhasSugestoes.filter(
-    (p) => p.status === "aprovado",
-  ).length
+  const totalSugestoes = document.getElementById("total-sugestoes")
+  if (totalSugestoes) {
+    totalSugestoes.textContent = minhasSugestoes.length
+  }
+
+  const sugestoesPendentes = document.getElementById("sugestoes-pendentes")
+  if (sugestoesPendentes) {
+    sugestoesPendentes.textContent = minhasSugestoes.filter((p) => p.status === "pendente").length
+  }
+
+  const sugestoesAprovadasCount = document.getElementById("sugestoes-aprovadas-count")
+  if (sugestoesAprovadasCount) {
+    sugestoesAprovadasCount.textContent = minhasSugestoes.filter((p) => p.status === "aprovado").length
+  }
 
   container.innerHTML = minhasSugestoes
     .map(
@@ -1161,7 +1168,10 @@ function loadMinhasSugestoes() {
 
 function loadConfiguracoes() {
   if (usuarioAtual) {
-    document.getElementById("profile-name").value = usuarioAtual.nome
+    const profileName = document.getElementById("profile-name")
+    if (profileName) {
+      profileName.value = usuarioAtual.nome
+    }
   }
 }
 
@@ -1376,163 +1386,16 @@ function loadFeedbacks() {
 }
 
 function loadEspecialistas() {
-  const container = document.getElementById("especialistas-list")
-  if (!container) return
-
-  // Dados simulados de especialistas
-  const especialistasSimulados = [
-    {
-      id: 1,
-      nome: "João Silva",
-      especialidade: "Infraestrutura",
-      email: "joao.silva@example.com",
-      telefone: "123456789",
-      experiencia: "5 anos",
-    },
-    {
-      id: 2,
-      nome: "Maria Santos",
-      especialidade: "Iluminação",
-      email: "maria.santos@example.com",
-      telefone: "987654321",
-      experiencia: "3 anos",
-    },
-  ]
-
-  container.innerHTML = especialistasSimulados
-    .map(
-      (especialista) => `
-    <div class="specialist-card">
-      <div class="specialist-header">
-        <div>
-          <div class="specialist-name">${especialista.nome}</div>
-          <span class="specialist-specialty">${especialista.especialidade}</span>
-        </div>
-        <div class="specialist-actions">
-          <button class="btn btn-primary" onclick="viewSpecialistDetails(${especialista.id})">
-            <i class="fas fa-eye"></i> Ver Detalhes
-          </button>
-          <button class="btn btn-secondary" onclick="assignProject(${especialista.id})">
-            <i class="fas fa-tasks"></i> Atribuir Projeto
-          </button>
-        </div>
-      </div>
-      <div class="specialist-meta">
-        <span><i class="fas fa-envelope"></i> ${especialista.email}</span>
-        <span><i class="fas fa-phone"></i> ${especialista.telefone}</span>
-        <span><i class="fas fa-hourglass-half"></i> ${especialista.experiencia}</span>
-      </div>
-    </div>
-  `,
-    )
-    .join("")
-}
-
-// Funções para modais de especialistas
-
-function showAddSpecialistModal() {
-  document.getElementById("add-specialist-modal").classList.add("active")
-}
-
-function closeAddSpecialistModal() {
-  document.getElementById("add-specialist-modal").classList.remove("active")
-  document.getElementById("add-specialist-form").reset()
-}
-
-function showAssignProjectModal(specialistId) {
-  const modal = document.getElementById("assign-project-modal")
-  const select = document.getElementById("assign-project-select")
-
-  // Carregar projetos disponíveis
-  select.innerHTML = '<option value="">Selecione um projeto</option>'
-  projetos.forEach((projeto) => {
-    if (projeto.status === "atribuido") {
-      const option = document.createElement("option")
-      option.value = projeto.id
-      option.textContent = projeto.titulo
-      select.appendChild(option)
-    }
-  })
-
-  modal.classList.add("active")
-  modal.dataset.specialistId = specialistId
-}
-
-function closeAssignProjectModal() {
-  document.getElementById("assign-project-modal").classList.remove("active")
-  document.getElementById("assign-project-form").reset()
-}
-
-// Handlers para formulários
-
-function handleProfileUpdate(e) {
-  e.preventDefault()
-
-  const nome = document.getElementById("profile-name").value
-  const email = document.getElementById("profile-email").value
-  const phone = document.getElementById("profile-phone").value
-  const neighborhood = document.getElementById("profile-neighborhood").value
-
-  // Atualizar dados do usuário
-  if (usuarioAtual) {
-    usuarioAtual.nome = nome
-    usuarioAtual.email = email
-    usuarioAtual.phone = phone
-    usuarioAtual.neighborhood = neighborhood
-
-    localStorage.setItem("usuario", JSON.stringify(usuarioAtual))
-  }
-
-  alert("Perfil atualizado com sucesso!")
-}
-
-function handleAddSpecialist(e) {
-  e.preventDefault()
-
-  const name = document.getElementById("specialist-name").value
-  const specialty = document.getElementById("specialist-specialty").value
-  const email = document.getElementById("specialist-email").value
-  const phone = document.getElementById("specialist-phone").value
-  const experience = document.getElementById("specialist-experience").value
-
-  // Simular adição do especialista
-  console.log("Novo especialista:", { name, specialty, email, phone, experience })
-
-  closeAddSpecialistModal()
-  alert("Especialista adicionado com sucesso!")
-}
-
-function handleAssignProject(e) {
-  e.preventDefault()
-
-  const projectId = document.getElementById("assign-project-select").value
-  const deadline = document.getElementById("assign-deadline").value
-  const priority = document.getElementById("assign-priority").value
-  const notes = document.getElementById("assign-notes").value
-
-  // Simular atribuição do projeto
-  console.log("Projeto atribuído:", { projectId, deadline, priority, notes })
-
-  closeAssignProjectModal()
-  alert("Projeto atribuído com sucesso!")
+  // Esta função seria implementada conforme necessário
+  console.log("Carregando especialistas...")
 }
 
 // Funções auxiliares
-
 function editarSugestao(id) {
   const problema = problemas.find((p) => p.id === id)
   if (problema && problema.autor === usuarioAtual?.nome) {
-    // Implementar edição
     alert("Funcionalidade de edição em desenvolvimento")
   }
-}
-
-function viewSpecialistDetails(id) {
-  alert(`Ver detalhes do especialista ${id}`)
-}
-
-function assignProject(specialistId) {
-  showAssignProjectModal(specialistId)
 }
 
 function viewBudgetDetails(id) {
